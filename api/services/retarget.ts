@@ -212,6 +212,39 @@ async function retargetToSpineboy(poseJson: PoseJson, outPath: string, jobDir: s
     }
   });
 
+  // Post-process: Smoothing
+  const SMOOTH_WINDOW = 5;
+
+  Object.keys(newAnimBones).forEach(boneName => {
+    const boneData = newAnimBones[boneName];
+    if (boneData.rotate && boneData.rotate.length > 0) {
+      // 1. Extract values
+      const rawAngles = boneData.rotate.map(k => k.value);
+      // 2. Unwrap
+      const unwrapped = unwrapAngles(rawAngles);
+      // 3. Smooth
+      const smoothed = smoothArray(unwrapped, SMOOTH_WINDOW);
+      // 4. Apply back (Wrap to -180~180 for cleanliness)
+      boneData.rotate.forEach((k, i) => {
+        let angle = smoothed[i];
+        while (angle > 180) angle -= 360;
+        while (angle < -180) angle += 360;
+        k.value = angle;
+      });
+    }
+
+    if (boneData.translate && boneData.translate.length > 0) {
+      const rawX = boneData.translate.map(k => k.x);
+      const rawY = boneData.translate.map(k => k.y);
+      const smoothX = smoothArray(rawX, SMOOTH_WINDOW);
+      const smoothY = smoothArray(rawY, SMOOTH_WINDOW);
+      boneData.translate.forEach((k, i) => {
+        k.x = smoothX[i];
+        k.y = smoothY[i];
+      });
+    }
+  });
+
   // Clean up empty arrays
   Object.keys(newAnimBones).forEach(k => {
     const b = newAnimBones[k];
@@ -241,4 +274,35 @@ async function retargetToSpineboy(poseJson: PoseJson, outPath: string, jobDir: s
 // Legacy helper (unused now but kept for compilation if referenced elsewhere)
 async function getPngSize(filePath: string) { return { width: 0, height: 0 }; }
 async function generateAtlas(dir: string, images: string[]) { return ''; }
+
+// Helper: Unwrap angles to avoid 179 -> -179 jumps causing smoothing artifacts
+function unwrapAngles(angles: number[]): number[] {
+  let unwrapped = [angles[0]];
+  for (let i = 1; i < angles.length; i++) {
+    let diff = angles[i] - angles[i-1];
+    while (diff > 180) diff -= 360;
+    while (diff < -180) diff += 360;
+    unwrapped.push(unwrapped[i-1] + diff);
+  }
+  return unwrapped;
+}
+
+// Helper: Moving Average Smoothing
+function smoothArray(values: number[], windowSize: number = 5): number[] {
+  const result = [];
+  const half = Math.floor(windowSize / 2);
+  for (let i = 0; i < values.length; i++) {
+    let sum = 0;
+    let count = 0;
+    for (let j = -half; j <= half; j++) {
+      const idx = i + j;
+      if (idx >= 0 && idx < values.length) {
+        sum += values[idx];
+        count++;
+      }
+    }
+    result.push(sum / count);
+  }
+  return result;
+}
 

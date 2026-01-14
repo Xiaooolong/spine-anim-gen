@@ -143,11 +143,11 @@ export default function SpinePixiPreview({ animUrl }: { animUrl: string }) {
           lastPos = { x: e.global.x, y: e.global.y }
           
           // Debug: Click to rotate head
-          const head = spineAnim.skeleton.findBone('head')
-          if (head) {
-              head.rotation += 45
-              console.log('Manual head rotation applied')
-          }
+          // const head = spineAnim.skeleton.findBone('head')
+          // if (head) {
+          //     head.rotation += 45
+          //     console.log('Manual head rotation applied')
+          // }
         })
         
         app.stage.on('pointermove', (e) => {
@@ -201,11 +201,11 @@ export default function SpinePixiPreview({ animUrl }: { animUrl: string }) {
             // DEBUG: Manually rotate head to prove renderer is working
             // If the head spins, the renderer is fine, and the issue is the animation data not being applied
             // or being overwritten.
-            const head = spineAnim.skeleton.findBone('head')
-            if (head) {
+            // const head = spineAnim.skeleton.findBone('head')
+            // if (head) {
                  // Uncomment the line below to test manual rotation
                  // head.rotation += 2 
-            }
+            // }
 
             updateDebug() 
         })
