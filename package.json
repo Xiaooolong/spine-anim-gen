@@ -9,7 +9,7 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "check": "tsc --noEmit",
-    "server:dev": "PORT=3003 nodemon --watch api --ext ts,tsx --exec tsx api/server.ts",
+    "server:dev": "nodemon --watch api --ext ts,tsx --exec tsx api/server.ts",
     "dev": "concurrently \"npm run client:dev\" \"npm run server:dev\""
   },
   "dependencies": {
